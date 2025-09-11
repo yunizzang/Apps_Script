@@ -1,0 +1,104 @@
+import argparse
+import csv
+from datetime import datetime
+
+from selenium import webdriver
+from selenium.webdriver import ActionChains
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver import ActionChains
+
+import csv
+import os
+from datetime import datetime
+
+class PartnerSite:
+    def __init__(self, name, url, element_move_to, selector):
+@@ -50,25 +52,53 @@ class PartnerSite:
+partner_sites = []
+
+partner_sites.append(PartnerSite("TRUECREDITS", "https://www.truecredits.in/partner", None, "#comp-ktx4j49l > h5 > span > span"))
+partner_sites.append(PartnerSite("INCRED", "https://www.incred.com/partnership.html", None, "#layout-wrapper > main > div > div > div.partnership-module--partners--c3168 > a:nth-child(18) > div.partnership-module--head--516c8"))
+partner_sites.append(PartnerSite("GROW", "https://growmoneycapital.com/PartnersList", None, "body > div.row.my-5.mx-lg-5.mx-sm-1 > div > table > tbody > tr:nth-child(1) > th > a"))
+partner_sites.append(PartnerSite("MUTHOOT", "https://www.muthootfinance.com/personal-loan", None, "body > main > div.dialog-off-canvas-main-canvas > section.insurance_section > section.tj_associates > div:nth-child(1) > div.owl-carousel.sp_carousel.owl-loaded.owl-drag > div.owl-stage-outer > div > div:nth-child(4) > div > div > a > img"))
+partner_sites.append(PartnerSite("VIVRITI", "https://www.vivriticapital.com/digital-lending-partners.html", "#download_info > div.section_container > div > div.accordion-container-left > div:nth-child(2)", "#download_info > div.section_container > div > div.accordion-container-left > div.arrow_down_set.parent_active > div > ul > li:nth-child(5) > a"))
+# TODO: scroll down
+partner_sites.append(PartnerSite("NORTHERN", "https://www.northernarc.com/direct-origination", None, "body > section.OurApproachGrid-4.el-grid-4 > div > div > div:nth-child(2) > ul > li:nth-child(14) > a"))
+partner_sites.append(PartnerSite("INCRED", "https://www.incred.com/partnership.html", None,
+                                 "#layout-wrapper > main > div > div > div.partnership-module--partners--c3168 > a:nth-child(18) > div.partnership-module--head--516c8"))
+partner_sites.append(PartnerSite("GROW", "https://growmoneycapital.com/PartnersList", None,
+                                 "body > div.row.my-5.mx-lg-5.mx-sm-1 > div > table > tbody > tr:nth-child(1) > th > a"))
+partner_sites.append(PartnerSite("MUTHOOT", "https://www.muthootfinance.com/personal-loan", None,
+                                 "body > main > div.dialog-off-canvas-main-canvas > section.insurance_section > section.tj_associates > div:nth-child(1) > div.owl-carousel.sp_carousel.owl-loaded.owl-drag > div.owl-stage-outer > div > div:nth-child(4) > div > div > a > img"))
+partner_sites.append(PartnerSite("VIVRITI", "https://www.vivriticapital.com/digital-lending-partners.html",
+                                 "#download_info > div.section_container > div > div.accordion-container-left > div:nth-child(2)",
+                                 "#download_info > div.section_container > div > div.accordion-container-left > div.arrow_down_set.parent_active > div > ul > li:nth-child(5) > a"))
+# TODO: scroll down
+partner_sites.append(PartnerSite("LENDBOX", "https://www.lendbox.in/channel-partner-investor", "#layout-content > div.channel-partner-investor-page.lb-page > div.lb-section.flex.flex-col.align-c-c > div.justify-c-c.gap-4.flex.align-c-c > button:nth-child(2)", "#layout-content > div.channel-partner-investor-page.lb-page > div.lb-section.flex.flex-col.align-c-c > div.full-width.align-c-c > div > div.VueCarousel-wrapper > div > div:nth-child(25) > div > div > img"))
+partner_sites.append(PartnerSite("NORTHERN", "https://www.northernarc.com/direct-origination", None,
+                                 "body > section.OurApproachGrid-4.el-grid-4 > div > div > div:nth-child(2) > ul > li:nth-child(14) > a"))
+# TODO: scroll down / enable lendbox
+#partner_sites.append(PartnerSite("LENDBOX", "https://www.lendbox.in/channel-partner-investor", "#layout-content > div.channel-partner-investor-page.lb-page > div.lb-section.flex.flex-col.align-c-c > div.justify-c-c.gap-4.flex.align-c-c > button:nth-child(2)", "#layout-content > div.channel-partner-investor-page.lb-page > div.lb-section.flex.flex-col.align-c-c > div.full-width.align-c-c > div > div.VueCarousel-wrapper > div > div:nth-child(25) > div > div > img"))
+
+# Argument parsing
+parser = argparse.ArgumentParser(description='Run selenium script with options.')
+parser.add_argument('--jenkins', type=bool, nargs='?', const=True, default=False, help='Use Jenkins options')
+args = parser.parse_args()
+
+# Option1: Will be used locally
+if not args.jenkins:
+    driver = webdriver.Chrome()
+
+# Option2: Will be used in Jenkins
+else:
+    chrome_driver_path = "./chrome/chromedriver-linux64/chromedriver"
+    chrome_binary_path = "./chrome/chrome-linux64/chrome"
+
+    # options
+    chrome_options = Options()
+    chrome_options.binary_location = chrome_binary_path
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--single-process")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+
+    # Initialize the WebDriver
+    service = Service(executable_path=chrome_driver_path)
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+
+# 결과를 저장할 CSV 파일 경로
+csv_file_path = 'result.csv'
+
+# 결과를 저장할 리스트
+results = []
+
+driver = webdriver.Chrome()
+
+for partner_site in partner_sites:
+    driver.get(partner_site.url)
+    print("Checking", partner_site.url)
+
+    if partner_site.element_move_to is not None:
+        elem = driver.find_element(By.CSS_SELECTOR, partner_site.element_move_to)
+@@ -80,18 +110,15 @@ for partner_site in partner_sites:
+    element = driver.find_element(By.CSS_SELECTOR, partner_site.selector)
+
+    if element:
+        # 엔터티가 발견되었을 때 스크린샷 캡처 및 파일 저장
+        screenshot_path = f"{datetime.now().strftime('%Y%m%d')}_{partner_site.url.split('//')[1].replace('/', '_')}.png"
+        # TODO: 최종 element 목적지까지 scroll down
+        # capture
+        driver.save_screenshot(screenshot_path)
+        results.append({'URL': partner_site.url, 'Found':True, 'Screenshot': screenshot_path})
+        results.append({'URL': partner_site.url, 'Found': True, 'Screenshot': screenshot_path})
+    else:
+        results.append({'URL': partner_site.url,'Found':False,  'Screenshot': None})
+        results.append({'URL': partner_site.url, 'Found': False, 'Screenshot': None})
+
+driver.quit()
+
+# 결과를 CSV 파일에 쓰기
+with open(csv_file_path, 'w') as file:
+    writer = csv.DictWriter(file, fieldnames=['URL', 'Found', 'Screenshot'])
+    writer.writeheader()
