@@ -15,9 +15,6 @@
 4) 성과 
 •	파트너 UI 변경을 조기에 탐지하여 수동 점검 부담을 감소
 •	규격 위반 가능성을 사전에 차단하여 컴플라이언스 리스크 감소
-<img width="468" height="306" alt="image" src="https://github.com/user-attachments/assets/13865f38-ba3f-474b-b8b7-b0fc22ee3754" />
-
-
 
 
     
